@@ -1,0 +1,662 @@
+\documentclass[12pt]{article}
+%\usepackage{xltxtra}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{amssymb, bm}
+\usepackage{subfigure}
+\usepackage{bbm}
+\usepackage{hyperref}
+\hypersetup{ %
+    colorlinks=true,
+    linkcolor=blue, %mydarkblue,
+    citecolor=blue, %mydarkblue,
+    filecolor=blue, %mydarkblue,
+    urlcolor=blue, %mydarkblue,
+} 
+%\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
+%\usepackage{fontspec}
+%\usepackage{xunicode}
+
+\newcommand{\iid}{\stackrel{\text{iid}}{\sim}}
+\newcommand{\eqInDist}{\stackrel{\text{d}}{=}}
+
+\usepackage{lmodern}
+% \renewcommand{\familydefault}{\sfdefault}
+\newcommand{\hint}[1]{\emph{{Hint: #1}}}
+
+\newenvironment{solution}
+    { {\fontfamily{lmss}\selectfont 
+       \textbf{Solution} 
+    }
+    { }}
+    
+
+\usepackage{endnotes}
+\let\footnote=\endnote
+
+
+\setlength{\parindent}{0cm}
+%\ifMain
+\addtolength{\oddsidemargin}{-2cm}
+\addtolength{\evensidemargin}{-2cm}
+\setlength{\textwidth}{17.78cm}
+\addtolength{\topmargin}{-2.7cm}
+\setlength{\textheight}{24.24cm}
+%\else
+\addtolength{\parskip}{5mm}
+%\fi
+\pagestyle{fancy}
+
+\title{Hwk 1}
+\author{Simon Lacoste-Julien}
+
+\begin{document}
+\fancyhead{}
+\fancyfoot{}
+
+\fancyhead[R]{
+  \begin{tabular}[b]{l}
+    Name: Tejas Vaidhya \\
+    Student id:  uv56320 \\
+  \end{tabular}
+  %\vspace*{10\baselineskip}
+}
+\fancyhead[L]{
+  \begin{tabular}[b]{l}
+    IFT6269-A2022  \\
+    Prof: Simon Lacoste-Julien \\
+  \end{tabular}
+  %\vspace*{10\baselineskip}
+}
+\fancyhead[C]{
+  \begin{tabular}[b]{c}
+    {\bf Hwk 1} \\
+    Due date: Sept 27, 2022
+  \end{tabular}
+}
+
+
+For each question, provide your derivations  and not just the answer. \\
+
+\begin{enumerate}
+
+% ---- Q1 ---- %
+\item {\bf Probability and independence (10 points)}
+Prove or disprove each of the following
+ properties of independence.
+
+\begin{enumerate}[(a)]
+\item $(\mathbf{X} \perp \mathbf{Y},\mathbf{W} \mid \mathbf{Z})$ implies
+  $(\mathbf{X} \perp \mathbf{Y} \mid \mathbf{Z})$
+    
+
+\begin{solution}
+ 
+ 
+ $P(\mathbf{X}, \mathbf{Y},\mathbf{W = w} \mid \mathbf{Z} )$ =  P($\mathbf{X \mid \mathbf{Z}}$) P($\mathbf{Y},\mathbf{W = w} \mid \mathbf{Z}$) 
+ 
+ Marginalised W
+
+ $\sum_{W}$ $P(\mathbf{X}, \mathbf{Y},\mathbf{W = w} \mid \mathbf{Z} )$ = P($\mathbf{X \mid \mathbf{Z}}$) $\sum_{W}$ P($\mathbf{Y},\mathbf{W = w} \mid \mathbf{Z}$)
+ 
+$P(\mathbf{X}, \mathbf{Y}, \mid \mathbf{Z} )$ = P($\mathbf{X \mid \mathbf{Z}}$) P($\mathbf{Y}, \mid \mathbf{Z}$) or $(\mathbf{X} \perp \mathbf{Y} \mid \mathbf{Z})$
+
+
+
+\end{solution} 
+
+$\newline$
+
+\item $(\mathbf{X} \perp \mathbf{Y} \mid \mathbf{Z})$ and
+  $(\mathbf{X}, \mathbf{Y} \perp \mathbf{W} \mid \mathbf{Z})$ imply
+  $(\mathbf{X} \perp \mathbf{W} \mid \mathbf{Z})$
+  
+  
+\begin{solution}
+
+
+ P$(\mathbf{X}, \mathbf{Y}, \mathbf{W},\mid \mathbf{Z})$ = P$(\mathbf{X}, \mathbf{Y} \mid \mathbf{Z})$ P$( \mathbf{W} \mid \mathbf{Z})$ 
+ 
+ P$(\mathbf{X}, \mathbf{Y}, \mathbf{W},\mid \mathbf{Z})$ = P$(\mathbf{X} \mid \mathbf{Z})$ P$(\mathbf{Y} \mid \mathbf{Z})$ P$( \mathbf{W} \mid \mathbf{Z})$ (using the condition (X $\prep$ Y $\mid$ Z))
+
+$\sum_Y$P$(\mathbf{X}, \mathbf{Y}, \mathbf{W},\mid \mathbf{Z})$ = P$(\mathbf{X} \mid \mathbf{Z})$ P$( \mathbf{W} \mid \mathbf{Z})$ $\sum_Y$ P$(\mathbf{Y} \mid \mathbf{Z})$
+
+P$(\mathbf{X}, \mathbf{W}, \mid \mathbf{Z})$ = P$(\mathbf{X} \mid \mathbf{Z})$ P$( \mathbf{W} \mid \mathbf{Z})$  or $(\mathbf{X} \perp \mathbf{W} \mid \mathbf{Z})$
+\end{solution}
+
+$\\$
+
+\item $(\mathbf{X} \perp \mathbf{Y},\mathbf{W} \mid \mathbf{Z})$ and
+  $(\mathbf{Y} \perp \mathbf{W} \mid \mathbf{Z})$ imply
+  $(\mathbf{X},\mathbf{W} \perp \mathbf{Y} \mid \mathbf{Z})$
+  
+\begin{solution}
+
+P$(\mathbf{X}, \mathbf{Y}, \mathbf{W} \mid \mathbf{Z})$ = P$(\mathbf{X}\mid \mathbf{Z})$ P$( \mathbf{Y}, \mathbf{W}  \mid \mathbf{Z})$ 
+
+\begin{equation}\label{1}
+P(\mathbf{X}, \mathbf{Y}, \mathbf{W} \mid \mathbf{Z}) = P(\mathbf{X}\mid \mathbf{Z}) P(  \mathbf{Y}  \mid \mathbf{Z}) P(  \mathbf{W}  \mid \mathbf{Z})     
+\end{equation}
+   
+
+
+$\sum_Y$ P$(\mathbf{X}, \mathbf{Y}, \mathbf{W} \mid \mathbf{Z})$ = P$(\mathbf{X}\mid \mathbf{Z})$ P$(  \mathbf{W}  \mid \mathbf{Z})$ $\sum_Y$ P$(  \mathbf{Y}  \mid \mathbf{Z})$ (marginalised Y)   
+
+\begin{equation} \label{2}
+P(\mathbf{X}, \mathbf{W} \mid \mathbf{Z}) =  P(\mathbf{X}\mid \mathbf{Z})  P(  \mathbf{W}  \mid \mathbf{Z})     
+\end{equation}
+
+
+from equation  \ref{1} and \ref{2}
+
+P$(\mathbf{X}, \mathbf{Y}, \mathbf{W} \mid \mathbf{Z}) = P(\mathbf{X}\mid \mathbf{Z}) P(  \mathbf{W}  \mid \mathbf{Z})  P(  \mathbf{Y}  \mid \mathbf{Z})$       
+
+
+P$(\mathbf{X}, \mathbf{Y}, \mathbf{W} \mid \mathbf{Z})$ = P$(\mathbf{X}, \mathbf{W} \mid \mathbf{Z})$ P$(  \mathbf{Y}  \mid \mathbf{Z})$ or $(\mathbf{X},\mathbf{W} \perp \mathbf{Y} \mid \mathbf{Z})$
+
+\end{solution}
+
+$\\$
+
+\item $(\mathbf{X} \perp \mathbf{Y} \mid \mathbf{Z})$ and
+  $(\mathbf{X} \perp \mathbf{Y}  \mid \mathbf{W})$ imply
+  $(\mathbf{X} \perp \mathbf{Y} \mid \mathbf{Z},\mathbf{W})$ 
+
+\begin{solution}
+Let  $\mathbf{X}, \mathbf{Y} and$  $\mathbf{ Z}$ are independent Random variable represent the outcomes of \textbf{three independent unbiased}  coin flip.
+
+
+$\mathbf{W = XYZ}$ (product of random variables)
+
+Possible sets of $\mathbf{W=(x,y,z)}$
+
+if $\mathbf{(W=0)}$ =\{(0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,1,0), (1,0,1), (0,1,1)\}
+
+if $\mathbf{(W=1)}$ =\{(1,1,1)\}
+
+\newline
+
+$\textbf{Left Hand Side}$
+
+For $\mathbf{X} \perp \mathbf{Y} \mid \mathbf{Z}$
+
+$P(X,Y \mid Z) = P(X|Z)P(Y|Z)$
+
+We know X, Y and Z are mutually independent
+$P(X,Y) = P(X)P(Y)$
+
+$P(X) P(Y) = P(X)P(Y)$
+
+
+For $\mathbf{X} \perp \mathbf{Y} \mid \mathbf{W}$
+
+$P(X=a, Y=b \mid W=0) = P(X=a | W=0)P(Y=b | W=0)$ where a,b $\in$ {0, 1}
+
+$1/4 = 1/2 . 1/2$ (if W=0, then a, b can take all the values because Z is unknown) 
+
+or 
+
+$P(X=a, Y=b \mid W=1) $ where $ a,b \in {0, 1}$
+
+if a=1, and b=1, $P(X=1|W=1)P(Y=1|W=1)\implies $  $1 = 1$  
+
+otherwise (i.e. b $\neq$ 1 and a $\neq$ 1), $P(X=a, Y=b \mid W=1) \implies 0=0$
+
+Thus, Left side will always be true 
+
+\textbf{Right Hand Side}
+
+we know set(W=0,Z=1)= \{(0,0,1), (1,0,1), (0,1,1)\}
+
+$P(X=1, Y=0 \mid Z=1, W=0) = 1/3$
+
+$P(X=1 \mid Z=1, W=0) P(Y=0 \mid Z=1, W=0)$ = 1/2 . 1/2 = 1/4
+
+$P(X=1, Y=0 \mid Z=1, W=0) \neq $P(X=1 \mid Z=1, W=0) P(Y=0 \mid Z=1, W=0)$ 
+
+Right Hand Side is not True  
+
+\textbf{Reference}: \url{https://math.stackexchange.com/questions/328777/}
+\end{enumerate}
+
+\end{array}
+
+
+\end{solution}
+\vspace{0.1cm}
+
+\hint{If you are convinced a statement is false, come up with a \textbf{concrete and simple} counterexample for which the statement is not true.}
+
+% ---- Q2 ---- %
+\item {\bf Bayesian inference and MAP (10 points)} \\
+Let $\boldsymbol{X}_{1},\dots,\boldsymbol{X}_{n} \mid  \boldsymbol{\pi}
+\iid \text{Multinomial}(1,\boldsymbol{\pi})$ on $k$ elements. The encoding for a possible value $\bm{x}_i$ of the random vector $\boldsymbol{X}_{i}$ can take is $\bm{x}_i = (x_{1}^{(i)},x_{2}^{(i)},\dots,x_{k}^{(i)})$ with $x_{j}^{(i)} \in \{0,1\}$ and $\sum_{j'=1}^{k} x_{j'}^{(i)} = 1$. 
+%In other words, we have a $j^*$ where $x_{j^*}^{(i)} = 1$ and for each $j' \neq j^*$, $x_{j'}^{(i)}=0$.
+In other lingo, $\boldsymbol{X}_{i}$ is a $k$-dimensional one-hot vector.
+
+Consider a Dirichlet prior distribution on $\boldsymbol{\pi}$: ${\boldsymbol{\pi}} \sim \mathrm{Dirichlet}(\boldsymbol{\alpha})$, where $\boldsymbol{\alpha} = (\alpha_{1},\alpha_{2},\dots,\alpha_{k})$ and $\alpha_j > 0$ for all $j$. The Dirichlet distribution describes a \emph{continuous} random vector $\bm{\pi}$ which lies on the probability simplex $\Delta_k := \{\bm{\pi} \in \mathbb{R}^k : 0 \leq \pi_j \leq 1 \text{ and } \sum_{j=1}^k \pi_j = 1\}$. 
+
+Its probability density function\footnote{Formally, this density function is taken with respect to a $(k\!-\!1)$-dimensional Lebesgue measure defined on $\Delta_k$. But equivalently, you can also think of the density to be a standard one in dimension $k-1$ defined for the first $k-1$ components $(\pi_1, \ldots, \pi_{k-1})$ which are restricted to the (full) dimensional polytope $T_{k-1} := \{ (\pi_1, \ldots, \pi_{k-1}) \in \mathbb{R}^{k-1} : 0 \leq \pi_j \leq 1 \text{ and } \sum_{j=1}^{k-1} \pi_j \leq 1 \}$, and then letting $\pi_k := 1 - \sum_{j=1}^{k-1} \pi_j$ in the formula. 
+Note that this bijective transformation from $T_{k-1}$ onto $\Delta_k$ has a Jacobian with a determinant of~1, which is why the two Lebesgue measures are equivalent and one does not need to worry about which of the two spaces we are defining the density on.}
+is $p(\bm{\pi} | \bm{\alpha}) = \frac{\Gamma(\sum_{j=1}^k \alpha_j)}{\prod_{j=1}^k \Gamma(\alpha_j)} \prod_{j=1}^k \pi_j^{\alpha_j - 1}$. Just like the Binomial distribution is the special case of a Multinomial distribution with $k=2$, the Beta distribution is the 2-dimensional instantiation of a Dirichlet distribution.
+
+\begin{enumerate}[(a)]
+\item Supposing that the data is IID, what are the conditional independence
+  statements that we can state for the joint distribution $p(\boldsymbol{\pi}, \boldsymbol{x}_{1},\dots,\boldsymbol{x}_{n})$? Write your answer in the form of formal
+  conditional independence statements as in Question 1 (a) - (d).   
+  
+ \begin{solution}
+ $X_i \perp X_j \mid \pi$  where  i, j =\{1, 2, ..., n\}  $\land$ i \neq j 
+ 
+ \end{solution}
+ 
+\item Derive the posterior distribution $p(\boldsymbol{\pi} \mid
+  \boldsymbol{x}_{1},\dots,\boldsymbol{x}_{n})$. The expected answer has the form: \textit{``The posterior is a \underline{\hspace{8mm}} distribution with parameters \underline{\hspace{8mm}}".} 
+  
+ \begin{solution}
+ we have 
+\begin{equation}
+p(\bm x \mid \bm\pi) = \prod_{j=1}^{K} \pi^{x_{ i,j}} 
+\end{equation}
+ where x_{i,j} \in \{0,1\} 
+ \ is \ the \ $j^{th}$ component of $x_{i} \in X$ 
+ 
+ \begin{equation}
+ p(\bm{\pi} | \bm{\alpha}) = \frac{\Gamma(\sum_{j=1}^k \alpha_j)}{\prod_{j=1}^k \Gamma(\alpha_j)} \prod_{j=1}^k \pi_j^{\alpha_j - 1}
+ \end{equation}
+      p(\bm\pi \mid \bm x) \propto p(\bm x \mid \bm\pi ) p(\bm\pi ; \bm\alpha)
+      
+
+      
+\end{solution}
+
+ $$\propto \prod_{x_{i} \in X}\prod_{j=1}^{K} \pi_{j}^{\mathbbm{1}\{x_{i} = j\}} \prod_{j=1}^{K} \pi_{j}^{(\alpha_{j} -1 )} (\ dropping \ constants)  $$
+ 
+p(\pi \mid x) \propto $\prod_{j=1}^{K} \pi_{j}^{\alpha_{j}- 1 + \sum_{x_{j} \in X} \mathbbm{1} {\{x_i = j\}}}$
+
+The posterior is a Dirichlet distribution with parameters $\alpha_{j^{new}} = \alpha_{j} + \sum_{x_{i} \in X } \mathbbm{1}{\{ x_i = j\}}$ 
+
+\item Derive the marginal probability
+  $p(\boldsymbol{x}_{1},\dots,\boldsymbol{x}_{n})$ (or equivalently 
+  $p(\boldsymbol{x}_{1},\dots,\boldsymbol{x}_{n} \mid \boldsymbol{\alpha})$.) This quantity is called the \emph{marginal likelihood} and we will see it again when doing model selection later in the course.
+  
+\begin{solution}
+$p(\boldsymbol{x}_{1},\dots,\boldsymbol{x}_{n} \mid \boldsymbol{\alpha})$ = \int p(x \mid \pi) p(\pi \mid  \alpha) d\pi 
+\end{solution}
+= $\int \frac{\Gamma(\sum_{j=1}^k \alpha_j)}{\prod_{j=1}^k \Gamma(\alpha_j)} \prod_{j=1}^k \pi_j^{\alpha_j - 1}$ $\prod_{x_{i} \in X}\prod_{j=1}^{K} \pi_{j}^{\mathbbm{1}\{x_{i} = j\}}  d\pi $ 
+
+= $ \frac{\Gamma(\sum_{j=1}^k \alpha_j)}{\prod_{j=1}^k \Gamma(\alpha_j)} \int \prod_{j=1}^k  \pi_{j}^{\alpha_{j}- 1 + \sum_{x_{j} \in X} \mathbbm{1} {\{x_i = j\}}} d\pi$
+
+= $ \frac{\Gamma(\sum_{j=1}^k \alpha_j)}{\prod_{j=1}^k \Gamma(\alpha_j)}  \prod_{j=1}^k  \frac{\Gamma(\sum_{x_{j} \in X} \mathbbm{1}\{x_{i} = j\} + \alpha_j}{\Gamma(|X| + \sum_{j=1}^k \alpha_j)} )$
+\\
+
+\item Derive the MAP estimate $\hat{\bm{\pi}}$ for $\bm{\pi}$ assuming that the hyperparameters for the Dirichlet prior satisfy $\alpha_j > 1$ for all $j$. Compare this MAP estimator with the MLE estimator for the multinomial distribution seen in class in the regime of extremely large $k$.\footnote{An example of this is when modeling the appearance of words in a document: here $k$ would be the numbers of words in a vocabulary. The MAP estimator derived above when the prior is a symmetric Dirichlet is called \emph{additive smoothing} or \emph{Laplace smoothing} in statistical NLP.}
+
+
+\begin{solution}
+
+
+$\hat{\pi} = argmax(p(\pi \mid x))$
+
+\end{solution}
+ dropping term without $\pi$
+ 
+ = argmax($\prod_{j=1}^k \pi_j^{x_j} \prod_{j=1}^k \pi_j^{\alpha_j -1 } $)
+
+ = argmax($\prod_{j=1}^k \pi_j^{x_j + \alpha_j -1 }  $)
+ 
+ taking $\ln$ 
+ 
+ 
+ $\hat{\pi} = argmax(\ln(\prod_{j=1}^k \pi_j^{x_j + \alpha_j -1}))$
+  
+  $\hat{\pi} $= argmax(\sum_{j=1}^{k} $(x_j + \alpha_{j} -1 $) $\ln(\pi_{j}$))
+ 
+ we need to maximise the above term with the constraint using Lagrange  $\sum_{j=1}^{k} \pi_j  = 1$
+
+
+ $J(\pi, \lambda) = \sum_{j=1}^{k} $(x_j + \alpha_{j} -1 $) $\ln(\pi_{j}$) - \lambda ( \sum_{j=1}^{k} \pi_j  - 1$)
+ 
+  We can search the stationary points of the Lagrangian, i.e pairs ($\pi$, $\lambda$) satisfying
+$\Delta_{\pi} J(\pi, \lambda) = 0$ and $\Delta_{\lambda} J(\pi, \lambda) = 0$.
+
+ $\frac{\partial J(\pi, \lambda) }{\partial \lambda} = 0$
+ \begin{equation}\label{5}
+  \sum_{j=1}^{k} \pi_{j} = 1
+ \end{equation}
+
+  and by
+$\frac{\partial J(\pi, \lambda) }{\partial \pi_j} = 0$
+
+\begin{equation}\label{6}
+ \frac{ x_j + \alpha_j- 1 }{\pi_j} = \lambda ,  \forall j \in \{1,2,..,k\}
+\end{equation}
+ 
+ using equation \ref{5} and \ref{6}
+
+$\sum_{j=1}^{k} (x_j + \alpha_j) - k = \lambda$
+
+$\hat{\pi_j} = \frac{x_j + \alpha_{j} -1 }{\sum_{j=1}^{k} (x_j + \alpha_j) - k}$  (\ by \ putting \lambda \ in \ $\ref{6}$\)
+
+$\hat{\pi_j} = \frac{x_j + \alpha_{j} -1 }{\sum_{j=1}^{k} (x_j )+ (\alpha_j - 1 ) k}$  
+
+
+
+When modeling the appearance of words in a document(here k would be the numbers of words in a vocabulary). The MLE will be zero for out of vocabulary token/word. On the other hand MAP will provide some value (usually small but not zero) even for the unseen words. 
+$\\$
+
+The MAP estimator will be small but not zero if K is large. This makes sense since as K increases, fewer words from outside the vocabulary will occur, which will result in a reduced estimate but no zero.
+
+\textbf{Reference:} \url{https://stephentu.github.io/writeups/dirichlet-conjugate-prior.pdf}
+
+\end{enumerate}
+
+
+
+% ---- Q3 ---- %
+\item {\bf Properties of estimators (20 points) }
+\begin{enumerate}[(a)]
+\item Let $X_{1},\dots,X_{n} \iid \mathrm{Poisson}(\lambda)$. The pmf for a Poisson r.v. is $p(x | \lambda) = e^{-\lambda} \frac{\lambda^x}{x!} \text{ for } x \in \mathbb{N}$. Find the
+  MLE for $\lambda$ and derive its bias, variance and consistency (Y/N). 
+ 
+ \begin{solution}
+ $L(\lambda; x_1, \dots, x_{n})$ = $ \prod_{j=1}^{n} e^{-\lambda} \frac{\lambda^{x_j}}{x_{j}!}$ 
+ 
+ Taking log-likelihood of above function 
+ 
+$l(\lambda; x_1, \dots, x_{n})$ = $\ln(\lambda) \sum_{j=1}^{n} x_j - n\lambda  - \sum_{j=1}^{n} \ln(x_j !)$
+
+$\hat{\lambda} = arg max\ l(\lambda; x_1, \dots, x_{n})$
+
+To maximise
+$\frac{\partial}{\partial \lambda} l(\lambda; x_1, \dots, x_{n}) = 0 $	
+
+$\frac{\partial }{\partial \lambda} l(\lambda; x_1, \dots, x_{n})$ = $\frac{\partial }{\partial \lambda}\ln(\lambda) \sum_{j=1}^{n} x_j - n\lambda  - \sum_{j=1}^{n} \ln(x_j !)$ = 0 
+
+
+
+ $\frac{1}{\lambda} \sum_{j=1}^n x_j -n$ = 0
+
+Here second derivative i.e.  $-\frac{1}{\lambda^2} \sum_{j=1}^n x_j $ will be negative $\implies$ maxima 
+
+$\hat{\lambda} = \frac{1}{n} \sum_{j=1}^n X_j$
+
+
+$Bias(\hat{\lambda}) = E(\hat{\lambda}) - \lambda$
+
+$\;\;\;$ = $E(\frac{1}{n} \sum_{i=1}^n X_j) -\lambda$
+ 
+ $\;\;\;$ = $\frac{1}{n} E(\sum_{i=1}^n X_j) -\lambda$
+  
+  $\;\;\;$ = $\frac{1}{n}.n\lambda -\lambda$ = $0$
+ 
+
+ $Var(\hat{\lambda}) = var(\frac{1}{n}\sum_{i=1}^n X_i)$ 
+ 
+ $\;\;\;\;$ = $\frac{1}{(n)^2}(\sum_{i=1}^n var X_i)$ 
+
+ $\;\;\;\;$ = $\frac{1}{n^2}n\lambda$ = $\lambda/n$
+
+
+
+For consistency check, 
+using Chebyshev's inequality 
+
+$P(\mid \hat{\lambda} - E[\hat{\lambda}] \mid > \epsilon)$ 	$\le \frac{Var(\hat{\lambda})}{\epsilon^2}$
+
+$P(\mid \hat{\lambda} - E[\hat{\lambda}] \mid > \epsilon)$ $\le$ $\frac{1}{n \epsilon^2} \lambda$
+
+$\lim_{n \to \infty}$ $P(\mid \hat{\lambda} - E[\hat{\lambda}] \mid > \epsilon)$ 	$\le $ $\lim_{n \to \infty}$  $\frac{1}{n \epsilon^2} \lambda$ 
+ 
+$\lim_{n \to \infty}$ $P(\mid \hat{\lambda} - E[\hat{\lambda}] \mid > \epsilon)$ = 0 
+
+Yes, the estimator $\hat{\lambda} $ is \textbf{consistent} 
+ \end{solution}
+ 
+ 
+ 
+\item Let $X_{1},\dots,X_{n} \iid \mathrm{Bernoulli}(p)$  and suppose
+  that $n>10$. Consider $\hat{p} :=
+  \frac{1}{10}\sum_{i=1}^{10} X_{i}$ as an estimator of $p$. Derive its bias,
+  variance and consistency (Y/N). 
+
+\begin{solution}
+ 
+ $\hat{p} = \frac{1}{10}\sum_{i=1}^{10} X_{i}$
+ 
+\bm $Bias(\hat{p})$ = $E(\hat{p}) - p$
+
+$\;\;\;\;$ = $E( \frac{1}{10}\sum_{i=1}^{10} X_{i})- p$
+
+$\;\;\;\;$ = $ \frac{1}{10}E(\sum_{i=1}^{10} X_{i})- p$
+
+$\;\;\;\;$ = $ \frac{10}{10}p - p = 0 $ 
+
+
+ $Var(\hat{p})$ = $Var( \frac{1}{10}\sum_{i=1}^{10} X_{i})$
+
+$\;\;\;\;$ = $\frac{1}{100} Var( \sum_{i=1}^{10} X_{i})$
+
+$\;\;\;\;$ = $\frac{1}{10} p(1-p)$
+
+using Chebyshev's inequality 
+
+$P(\mid \hat{p} - E[\hat{p}] \mid > \epsilon)$ 	$\le \frac{Var(\hat{p})}{\epsilon^2}$
+
+$\;\;\;\;$ = $\frac{1}{10 \epsilon^2} p(1-p)$
+
+The above equation is independent of n and n\(>10 $\implies$ estimator $\hat{p}$ is \textbf{not consistent}
+\end{solution}
+
+
+\item Let $X_{1},\dots,X_{n} \iid \mathrm{Uniform}(0,\theta)$. Find the MLE for $\theta$ and derive its bias, variance and consistency (Y/N).
+
+\begin{solution}
+
+The probability density function 
+$\bm \mathfX p(X_i \mid \theta) = \frac{1}{\theta} \mathbbm{I}(0<X_i<\theta)$
+
+$L(\theta) =\frac{1}{\theta^n}
+\bm I(0\(< X_1, X_2 \dots X_n<\( \theta)
+$
+
+$L(\theta) =\frac{1}{\theta^n}
+\bm I(\(max( X_1, \dots X_n)<\( \theta)
+$
+
+here $\bm$ I is indicator function
+
+$L(\theta) = 0$ if $\theta<(max( X_1, \dots X_n))$
+
+
+$L(\theta) = 1/\theta^n$ if $\theta>(max( X_1, \dots X_n))$
+
+
+$L(\theta)$ is decreasing function for    $\theta \(> max( X_1, \dots X_n)$ 
+
+
+Thus, MLE doesn't exist 
+
+Assuming $\theta$ is included, 
+
+$\hat{\theta} = max(X_1, . . . , Xn)$
+ 
+Distribution of $\hat{\theta}$
+
+$P(\hat{\theta} \leq c) = P(max(X_i, \dots X_n) \(<  c)=P(X_i \(< c, \dots X_n \(<  c) = ({\frac{c}{\theta}})^n$ 
+
+probability density function 
+
+$p(c) = n(\frac{c}{\theta})^{n-1}.\frac{1}{\theta}$
+
+$bias(\hat{\theta}) = E(\hat{\theta})-\theta$
+
+$\;\;\;\;$ = $\int_{0}^{\theta} cp(c) dc$ - $\theta$
+
+$\;\;\;\;$ = $\int_{0}^{\theta} c.n(\frac{c}{\theta})^{n-1}.\frac{1}{\theta} dc $ - $\theta$
+
+$\;\;\;\;$ = $\frac{n}{\theta^n} \int_{0}^{\theta}  c^n dc $ - $\theta$
+
+$\;\;\;\;$ = $\frac{n}{n+1}\theta $ - $\theta$ here $E(\hat{\theta})$ = $\frac{n}{n+1}\theta$ 
+
+$\;\;\;\;$ = $\frac{n}{n+1}\theta $ - $\theta = -\frac{\theta}{n+1}$
+
+$var(\hat{\theta})$ = $E(\hat{\theta}^2) - E(\hat{\theta})^2$
+
+$E(\hat{\theta}^2) = \int_{0}^{\theta} c^2.p(c) $
+
+$var(\hat{\theta}) = \int_{0}^{\theta} c^2.p(c) - (\frac{n}{n+1}\theta)^2 $
+
+$\;\;\;\; = \int_{0}^{\theta} c^2.n(\frac{c}{\theta})^{n-1}.\frac{1}{\theta} - (\frac{n}{n+1}\theta)^2$
+
+
+$\;\;\;\; = \frac{n}{\theta^n}. \int_{0}^{\theta} c^{(n+1)} - (\frac{n}{n+1}\theta)^2$
+
+$\;\;\;\; = \frac{n}{n+2}\theta^2 - (\frac{n}{n+1}\theta)^2$
+
+$\;\;\;\; = \frac{n}{n+2}.\frac{1}{(n+1)^2}.\theta^2.$
+
+$ \lim_{n \to \infty} bias(\hat{\theta}) =0$ and $ \lim_{n \to \infty} var(\hat{\theta}) =0$
+
+By Chebyshev’s inequality $\hat{\theta}$ is \textbf{{consistent estimator}}
+
+\end{solution} 
+
+ \vspace{0.1cm}
+
+\textbf{Reference}: 
+\url{https://ocw.mit.edu/courses/18-443-statistics-for-applications-fall-2006/bd79a856f16cfa336fd4c0cf13ea2611_lecture2.pdf}
+
+
+\hint{For each $c \in \mathbb{R}$, $P(\max\{X_{1},\dots,X_{n}\}<c) = P(X_{1} <
+  c, X_{2} < c, \dots, X_{n} < c)= P(X_{1} < c) P(X_{2} < c) \cdots P(X_{n} < c)$.}
+  
+\item Let $X_{1},\dots,X_{n} \iid \mathcal{N}(\mu,\sigma^2)$ (where $\mu \in \mathbb{R}$) for $n\geq2$ to simplify. Let $\bar{X} := \frac{1}{n} \sum_{i=1}^n X_i$. Show that the MLE\footnote{Note that formally we should use the notation $\hat{\sigma^2}$ (which looks ugly!) as we are estimating the variance $\sigma^2$ of a Gaussian rather than its standard deviation $\sigma$. But as the MLE is invariant to a re-parameterization of the full parameter space (from $\sigma^2$ to $\sigma$ e.g.), then we simply have $\hat{\sigma^2} = \hat{\sigma}^2$ and the distinction is irrelevant.} 
+for $\theta := (\mu,\sigma^2)$ is $\hat{\mu} = \bar{X}$ and $\hat{\sigma}^2 := \frac{1}{n} \sum_{i=1}^n (X_i - \bar{X})^2$. Derive the bias, variance and consistency (Y/N) \textit{only} for $\hat{\sigma}^2$.
+
+\begin{solution}
+Let the pdf of normal distribution 
+$p(x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}$
+
+$L(\mu, \sigma) = \prod_{i=1}^n p(x_i \mid \sigma, \mu)$ = $\sigma^{-n}(2\pi)^{-n/2}e^{\frac{-1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2}$
+
+log of likelihood function 
+
+$l(\mu, \sigma)$ = $-n\ln{\sigma} - \frac{n}{2} \ln{(2\pi)} - \frac{\sum_{i=1}^n (x_i - \mu)^2}{2\sigma^2}$
+
+Taking partial derivative of log likelihood w.r.t $\sigma$ and  $\mu$
+
+ $\frac{\partial l(\mu, \sigma)}{\partial \mu}$ =  $\frac{-2\sum_{i=1}^n (x_i - \mu)}{2 \sigma^2}$
+
+$\frac{\partial l(\mu, \sigma)}{\partial \mu}=0$
+$\implies \mu = \frac{\sum_{i=1}^n x_i}{n}$
+
+$\hat{\mu} = \frac{\sum_{i=1}^n X_i}{n}$ = $\bar{X}$
+
+replacing $\sigma^2$ with $\theta$ in loglikehood function
+
+$l(\mu, \theta = \sigma^2)$ = $-n/2\ln{\theta} - \frac{n}{2} \ln{(2\pi)} - \frac{\sum_{i=1}^n (x_i - \mu)^2}{2\theta}$
+
+
+$\frac{\partial l(\mu, \theta)}{\partial \theta}$ = $\frac{-n}{2\theta} + \frac{\sum_{i=1}^n (x_i -\mu)^2}{2\theta^2}$
+
+$\frac{\partial l(\mu, \theta)}{\partial \theta}=0$
+$\implies  -n\theta + \sum_{i=1}^n(x_i - \mu)^2 =0$
+
+  $\theta = \frac{\sum_{i=1}^n(x_i - \mu)^2}{n}$
+
+$\hat{\sigma}^2 = \frac{\sum_{i=1}^n(x_i - \hat{\mu})^2}{n}$
+
+
+$\hat{\sigma}^2 = \frac{\sum_{i=1}^n(X_i - \bar{X})^2}{n}$
+
+$Bias(\hat{\sigma^2})$ = $E(\hat{\sigma^2}) - \sigma^2$
+
+$\;\;\;$  = $E(\frac{\sum_{i=1}^n(x_i - \bar{x})^2}{n}) - \sigma^2$ 
+
+$\;\;\;$  = $\frac{1}{n}E(\sum_{i=1}^n(x_i - \bar{x})^2) - \sigma^2$ 
+
+$\;\;\;$ =$\frac{1}{n}E(\sum_{i=1}^n x_i^2 + \sum_{i=1}^n\bar{x}^2- 2 \sum_{i=1}^n \bar{x} x_i)  - \sigma^2$ 
+
+$\;\;\;$ =$\frac{1}{n}E(\sum_{i=1}^n x_i^2 + N\bar{x}^2- 2 N \bar{x}^2)  - \sigma^2$ 
+
+$\;\;\;$ =$\frac{1}{n}E(\sum_{i=1}^n x_i^2 -  N \bar{x}^2)  - \sigma^2$ 
+
+$\;\;\;$ =$E( x_i^2) -   E(\bar{x}^2)  - \sigma^2$ 
+
+we know $\sigma_{x}^2$ + $ \mu$ = $E(x^2) $
+
+
+$\;\;\;$ =$\sigma^2$ +$\mu $- $\mu$-$\sigma_{\bar{x}}^2$ - \sigma^2$ 
+
+$\;\;\;$ =$\sigma^2$ -$\sigma_{\bar{x}}^2$ - $\sigma^2$  
+
+{$Bias(\hat{\sigma^2}) = - \sigma_{\bar{x}}^2$ 
+
+
+And, $\sigma_{\bar{x}}^2 = var(\bar{x}) = var(\frac{1}{N} \sum_{i=1}^n x_i) $
+
+$\;\;\;$  =$ \frac{1}{n^2} var(\sum_{i=1}^n x_i)$ ( $x_i$ are iid) 
+
+$\;\;\;$  =$ \frac{1}{n} \sigma^2$
+
+$Bias(\hat{\sigma^2}) = - \sigma_{\bar{x}}^2$ = -$ \frac{1}{n} \sigma^2$
+
+
+Calculation for  variance of estimator 
+
+$var(\hat{\sigma^2}) = var(\frac{\sum_{i=1}^n(x_i - \bar{x})^2}{n})$
+
+$\;\;\; = \frac{1}{n^2}var(\sum_{i=1}^n(x_i - \bar{x})}^2)$
+
+we know that 
+$\sigma^2\chi^2_{n-1} \sim \sum_{i=1}^n(X_i - \bar{X}) ^2$
+
+$\;\;\; = \frac{1}{n^2}var(\sigma^2\chi^2_{n-1})$
+
+$\;\;\; = \frac{\sigma^4}{n^2}var(\chi^2_{n-1})$
+
+$\;\;\; = \frac{\sigma^4}{n^2}var(\chi^2_{n-1})$
+
+Also, $var(\chi^2_{n-1}) = 2(n-1)$
+
+$var(\hat{\sigma^2}) = \frac{\sigma^4}{n^2}2(n-1)$ = $\frac{2(n-1) \sigma^4}{n^2}$
+
+$\lim_{n \to \infty}$ $Bias(\hat{\sigma^2}) = \lim_{n \to \infty}$ -$ \frac{1}{n} \sigma^2$ = 0
+
+by using Chebyshev’s inequality
+
+$P(\mid \hat{\sigma^2} - E[\hat{\sigma^2}] \mid > \epsilon)$ 	$\le \frac{Var(\hat{\sigma^2})}{\epsilon^2}$
+
+$P(\mid \hat{\sigma^2} - E[\hat{\sigma^2}] \mid > \epsilon)$ $\le$ $\frac{2(n-1) \sigma^4}{n^2 \epsilon^2}$
+
+$\lim_{n \to \infty}$ $P(\mid \hat{\sigma^2} - E[\hat{\sigma^2}] \mid > \epsilon)$ 	$\le $ $\lim_{n \to \infty}$  $\frac{2(n-1) \sigma^4}{n^2 \epsilon^2}$ 
+
+$\lim_{n \to \infty}$ $P(\mid \hat{\sigma^2} - E[\hat{\sigma^2}] \mid > \epsilon)$  = 0
+
+
+Yes, the estimator $\hat{\sigma^2} $ is \textbf{consistent} 
+
+\end{solution}
+\vspace{0.1cm}
+
+\hint{Let $\chi_{n-1}^2$ be the chi-squared distribution with $(n-1)$ degrees of freedom. When calculating the variance of $\hat{\sigma}^2$, you may use the fact that $\text{Var} [\chi_{n-1}^2] = 2(n-1)$, and that $\frac{1}{\sigma^2} \sum_{i=1}^n (X_i - \bar{X})^2 \eqInDist \chi_{n-1}^2$.}
+  
+\end{enumerate}
+
+\vspace{0.5cm}
+% ---- Q4 ---- %
+\item {\bf Maximum Likelihood Estimation (10 points)} 
+
+Follow the instructions in this Colab notebook:
+\url{https://drive.google.com/file/d/1M1P9sFkIOgqr3_HP0Y67EC2XQP0Wg7PC/view}
+
+\textbf{Collaborator} = Sophia Gunluk
+\end{enumerate}
+
+\theendnotes
+
+\end{document}
