@@ -2,6 +2,7 @@ import csv
 import json
 import itertools
 import random
+from re import T
 from typing import Union, Callable
 
 import numpy as np
@@ -335,23 +336,19 @@ def p_value_permutation_test(
     return p
 
 
-# ######################## PART 1: YOUR WORK STARTS HERE ########################
+# ######################## PART 1: YOUR WORK STARTS HERE ########################    
 
 
-def build_current_surrounding_pairs(indices: "list[int]", window_size: int = 2):
-    surrounding_pairs = []
-    current_word = []
-
-    for i in range(window_size, len(indices)-window_size):
-        current_word.append(indices[i])
-        sub_surrounding_pairs = []
-        for j in range(1, window_size + 1):
-            if i - j >= 0 and i + j < len(indices):
-                sub_surrounding_pairs.extend([indices[i - j], indices[i + j]])
-        surrounding_pairs.append(sub_surrounding_pairs)
-    return surrounding_pairs, current_word    
-
-
+def build_current_surrounding_pairs(sample_indices, window_size):
+    # YOUR CODE HERE
+    current_indices = []
+    surrounding_indices = []
+    for i in range(len(sample_indices)):
+        if i < window_size or i >= len(sample_indices) - window_size:
+            continue
+        current_indices.append(sample_indices[i])
+        surrounding_indices.append(sample_indices[i - window_size:i] + sample_indices[i + 1:i + window_size + 1])
+    return surrounding_indices, current_indices
 
 def expand_surrounding_words(ix_surroundings: "list[list[int]]", ix_current: "list[int]"):
     ix_surroundings_expanded = []
@@ -483,17 +480,20 @@ class CBOW(nn.Module):
         x = self.proj(x)
         return x
 
+
+    # TODO: your work here
+
+
 def compute_topk_similar(
     word_emb: torch.Tensor, w2v_emb_weight: torch.Tensor, k
 ) -> list:
-    # TODO: your work here
-    word_emb = word_emb.unsqueeze(0)
-    w2v_emb_weight = w2v_emb_weight.unsqueeze(0)
-    cos = nn.CosineSimilarity(dim=1, eps=1e-6)
-    similarity = cos(word_emb, w2v_emb_weight)
-    topk = torch.topk(similarity, k, dim=1)
-    topk_indices = topk.indices[0].tolist()
-    return topk_indices
+
+
+    word_emb = word_emb.reshape(1, -1)
+    word_emb = word_emb.repeat(w2v_emb_weight.shape[0], 1)
+    similarity = torch.cosine_similarity(word_emb, w2v_emb_weight, dim=1)
+    top_k = torch.topk(similarity,  k + 1)
+    return top_k.indices[1:].tolist()    
 
 
 @torch.no_grad()
@@ -524,9 +524,10 @@ def word_analogy(
     word_a_emb = model.emb(torch.tensor(index_map[word_a]))
     word_b_emb = model.emb(torch.tensor(index_map[word_b]))
     word_c_emb = model.emb(torch.tensor(index_map[word_c]))
-    word_d_emb = word_b_emb - word_a_emb + word_c_emb
+    word_d_emb = word_a_emb - word_b_emb + word_c_emb
     topk = compute_topk_similar(word_d_emb, model.emb.weight, k)
-    return [index_to_word[i] for i in topk]
+    topk_words = [index_to_word[index] for index in topk]
+    return topk_words
 
 
 # ######################## PART 2: YOUR WORK STARTS HERE ########################
@@ -572,7 +573,6 @@ def compute_profession_embeddings(
                 professions_embeddings[profession] = np.mean(embeddings, axis=0)
     return professions_embeddings    
 
-
 def compute_extreme_words(
     words: "list[str]",
     word_to_embedding: "dict[str, np.array]",
@@ -580,39 +580,60 @@ def compute_extreme_words(
     k: int = 10,
     max_: bool = True,
 ) -> "list[str]":
-    # TODO: your work here
-    words = [word for word in words if word in word_to_embedding]
-    words = np.array(words)
-    embeddings = np.array([word_to_embedding[word] for word in words])
-    projections = np.dot(embeddings, gender_subspace.T)
-    if max_:
-        return words[np.argsort(projections, axis=0)[-k:]].tolist()
-    else:
-        return words[np.argsort(projections, axis=0)[:k]].tolist()
-
+    # TODO
+    extreme_words = []
+    for word in words:
+        if word in word_to_embedding:
+            extreme_words.append([word, project( np.squeeze(word_to_embedding[word]), np.squeeze(gender_subspace.T) )])
+        else:
+            words = word.split()
+            embeddings = []
+            for word in words:
+                if word in word_to_embedding:
+                    embeddings.append(word_to_embedding[word])
+            if len(embeddings) > 0:
+                extreme_words.append([word, project( np.squeeze(embeddings), np.squeeze(gender_subspace.T) )])
+    extreme_words = sorted(extreme_words, key=lambda x: x[1], reverse=max_)
+    return [word for word, _ in extreme_words[:k]]
+  
 
 def cosine_similarity(a: np.array, b: np.array) -> float:
 
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) 
 
-# For a given set of words and an estimated gender subspace, computes the DirectBias metric.
+
 def compute_direct_bias(
     words: "list[str]",
     word_to_embedding: "dict[str, np.array]",
     gender_subspace: np.array,
     c: float = 0.25,
-):  
-    word_embedding = np.array([word_to_embedding[word] for word in words])
-    projection = gender_subspace
-    return cosine_similarity(word_embedding, projection)
+):
+    words = np.array(words)
+    embeddings = np.array([word_to_embedding[word] for word in words])
+    project = []
+    for embedding in embeddings:
+        project.append(cosine_similarity(embedding, gender_subspace.T))
 
+    project = np.array(project)
+    return np.mean(np.abs(project) ** c)
 
+    
+#s(w, A, B) = (1/|A|) * sum_{a in A} cos(w, a) - (1/|B|) * sum_{b in B} cos(w, b)
 def weat_association(
     w: str, A: "list[str]", B: "list[str]", word_to_embedding: "dict[str, np.array]"
 ) -> float:
-    return cosine_similarity(word_to_embedding[w], word_to_embedding[A].mean(axis=0) - word_to_embedding[B].mean(axis=0))
+    w_embedding = word_to_embedding[w]
+    a_embeddings = np.array([word_to_embedding[word] for word in A])
+    b_embeddings = np.array([word_to_embedding[word] for word in B])
+    a_projections = []
+    for a_embedding in a_embeddings:
+        a_projections.append(cosine_similarity(w_embedding, a_embedding.T))
+    b_projections = []
+    for b_embedding in b_embeddings:
+        b_projections.append(cosine_similarity(w_embedding, b_embedding.T))
+    return np.mean(a_projections) - np.mean(b_projections)
 
-
+# s(X,Y,A,B) =  sum_{x in X} s(x,A,B) - sum_{y in Y} s(y,A,B)
 def weat_differential_association(
     X: "list[str]",
     Y: "list[str]",
@@ -621,21 +642,34 @@ def weat_differential_association(
     word_to_embedding: "dict[str, np.array]",
     weat_association_func: Callable,
 ) -> float:
-    return weat_association_func(X, A, B, word_to_embedding) - weat_association_func(Y, A, B, word_to_embedding)
-    
+    # TODO
+    x_association = []
+    for x in X:
+        x_association.append(weat_association_func(x, A, B, word_to_embedding))
+    y_association = []
+    for y in Y:
+        y_association.append(weat_association_func(y, A, B, word_to_embedding))
+    return np.sum(x_association) - np.sum(y_association)
+
+#    Given a word and an estimated gender subspace, this function subtracts the embedding’s
+#    projection onto the estimated gender subspace from itself (making the embedding orthogonal to
+#    the estimated gender subspace)
+
 def debias_word_embedding(
     word: str, word_to_embedding: "dict[str, np.array]", gender_subspace: np.array
 ) -> np.array:
-    word_embedding = {word: word_to_embedding[word]}
-    projection = compute_direct_bias([word], word_to_embedding, gender_subspace)
-    return word_embedding[word] - projection
-
+    # TODO
+    word_embedding = word_to_embedding[word]
+    # sequeeze to remove the extra dimension
+    projection = project(np.squeeze(word_embedding), np.squeeze(gender_subspace.T))
+    return word_embedding - projection[1]
 
 def hard_debias(
     word_to_embedding: "dict[str, np.array]",
     gender_attribute_words: "list[str]",
     n_components: int = 1,
 ) -> "dict[str, np.array]":
+    gender_subspace = compute_gender_subspace(word_to_embedding,gender_attribute_words,n_components)
     for word in word_to_embedding:
         word_to_embedding[word] = debias_word_embedding(word, word_to_embedding,gender_subspace)
     return word_to_embedding
@@ -758,6 +792,12 @@ if __name__ == "__main__":
     # ###################### PART 1: TEST CODE ######################
 
     # Prefilled code showing you how to use the helper functions
+    # download kaggle dataset
+    # !kaggle datasets download -d rtatman/glove-global-vectors-for-word-representation
+    # !unzip glove-global-vectors-for-word-representation.zip
+
+
+
     word_to_embedding = load_glove_embeddings("data/glove/glove.6B.300d.txt")
 
     professions = load_professions("data/professions.tsv")
@@ -778,8 +818,8 @@ if __name__ == "__main__":
     profession_to_embedding = compute_profession_embeddings(word_to_embedding, professions)
 
     # === Section 2.4 ===
-    positive_profession_words = ["doctor", "nurse", "engineer", "scientist", "teacher"]
-    negative_profession_words = ["nanny", "maid", "housekeeper", "waitress", "nurse"]
+    positive_profession_words = compute_extreme_words( professions, profession_to_embedding, gender_subspace, max_ = True)
+    negative_profession_words = compute_extreme_words( professions, profession_to_embedding, gender_subspace, max_ = False)
 
     print(f"Max profession words: {positive_profession_words}")
     print(f"Min profession words: {negative_profession_words}")
