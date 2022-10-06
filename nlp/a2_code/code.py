@@ -651,10 +651,6 @@ def weat_differential_association(
         y_association.append(weat_association_func(y, A, B, word_to_embedding))
     return np.sum(x_association) - np.sum(y_association)
 
-#    Given a word and an estimated gender subspace, this function subtracts the embedding’s
-#    projection onto the estimated gender subspace from itself (making the embedding orthogonal to
-#    the estimated gender subspace)
-
 def debias_word_embedding(
     word: str, word_to_embedding: "dict[str, np.array]", gender_subspace: np.array
 ) -> np.array:
@@ -825,7 +821,7 @@ if __name__ == "__main__":
     print(f"Min profession words: {negative_profession_words}")
 
     # === Section 2.5 ===
-    direct_bias_professions = compute_direct_bias( professions, word_to_embedding, gender_subspace)
+    direct_bias_professions = compute_direct_bias( professions, profession_to_embedding, gender_subspace)
 
     # === Section 2.6 ===
 
