@@ -4,7 +4,8 @@ import itertools
 import random
 from re import T
 from typing import Union, Callable
-
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
 import torch
@@ -569,6 +570,8 @@ def compute_profession_embeddings(
             for word in words:
                 if word in word_to_embedding:
                     embeddings.append(word_to_embedding[word])
+                else:
+                    embeddings.append(np.zeros(300))
             if len(embeddings) > 0:
                 professions_embeddings[profession] = np.mean(embeddings, axis=0)
     return professions_embeddings    
@@ -670,7 +673,28 @@ def hard_debias(
         word_to_embedding[word] = debias_word_embedding(word, word_to_embedding,gender_subspace)
     return word_to_embedding
 
-
+def plot_before_hard_debiasing(
+    positive_profession_words: "list[str]",
+    negative_profession_words: "list[str]",
+    word_to_embedding: "dict[str, np.array]"):
+    # TODO
+    positive_profession_embeddings = []
+    for word in positive_profession_words:
+        positive_profession_embeddings.append(word_to_embedding[word])
+    negative_profession_embeddings = []
+    for word in negative_profession_words:
+        negative_profession_embeddings.append(word_to_embedding[word])
+    positive_profession_embeddings = np.array(positive_profession_embeddings)
+    negative_profession_embeddings = np.array(negative_profession_embeddings)
+    embeddings = np.concatenate((positive_profession_embeddings, negative_profession_embeddings), axis=0)
+    tsne = TSNE(n_components=2, random_state=0)
+    embeddings_2d = tsne.fit_transform(embeddings)
+    positive_profession_embeddings_2d = embeddings_2d[:len(positive_profession_embeddings)]
+    negative_profession_embeddings_2d = embeddings_2d[len(positive_profession_embeddings):]
+    plt.scatter(positive_profession_embeddings_2d[:, 0], positive_profession_embeddings_2d[:, 1], c='r')
+    plt.scatter(negative_profession_embeddings_2d[:, 0], negative_profession_embeddings_2d[:, 1], c='b')
+    # save the plot
+    plt.savefig('before_hard_debiasing.png')
 
 if __name__ == "__main__":
     random.seed(2022)
@@ -802,7 +826,7 @@ if __name__ == "__main__":
         "data/gender_attribute_words.json"
     )
 
-   # === Section 2.1 ===
+    # === Section 2.1 ===
     gender_subspace =  compute_gender_subspace(word_to_embedding, gender_attribute_words, n_components=1)
 
     # === Section 2.2 ===
@@ -835,13 +859,17 @@ if __name__ == "__main__":
 
     word = "doctor"
     weat_association_word = weat_association( word, A, B, word_to_embedding)
-    weat_differential_association = weat_differential_association(X, Y, A, B, word_to_embedding, weat_association)
+    weat_differential_association_word  = weat_differential_association(X, Y, A, B, word_to_embedding, weat_association)
 
     # === Section 3.1 ===
     debiased_word_to_embedding = debias_word_embedding(word, word_to_embedding,gender_subspace)
     debiased_to_embedding = hard_debias(word_to_embedding, gender_attribute_words, n_components = 1)
     debiased_profession_to_embedding = compute_profession_embeddings(debiased_to_embedding, professions)
     # === Section 3.2 ===
+    direct_bias_professions_biased = compute_direct_bias(professions, profession_to_embedding, gender_subspace)
+    
+    print(f"DirectBias Professions (Biased): {direct_bias_professions_biased:.2f}")
+
     direct_bias_professions_debiased = compute_direct_bias(professions, debiased_profession_to_embedding, gender_subspace)
 
     print(f"DirectBias Professions (debiased): {direct_bias_professions_debiased:.2f}")
@@ -867,6 +895,10 @@ if __name__ == "__main__":
         "drama",
         "sculpture",
     ]
-    p_value = p_value_permutation_test(X, Y, A, B, profession_to_embedding)
+    p_value = p_value_permutation_test(X, Y, A, B, word_to_embedding)
+    print(f"p-value (without hard_debiase): {p_value:.2f}")
 
-    print(f"p-value: {p_value:.2f}")
+    p_value_debias = p_value_permutation_test(X, Y, A, B, debiased_to_embedding)
+    print(f"p-value (with hard_debiase): {p_value_debias:.2f}")
+
+    plot_before_hard_debiasing( positive_profession_words, negative_profession_words, word_to_embedding)
