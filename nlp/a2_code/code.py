@@ -802,7 +802,7 @@ if __name__ == "__main__":
         "data/gender_attribute_words.json"
     )
 
-    # === Section 2.1 ===
+   # === Section 2.1 ===
     gender_subspace =  compute_gender_subspace(word_to_embedding, gender_attribute_words, n_components=1)
 
     # === Section 2.2 ===
@@ -834,12 +834,13 @@ if __name__ == "__main__":
     Y = ["nurse", "artist", "teacher"]
 
     word = "doctor"
-    weat_association = weat_association(A, B, X, Y, word)
-    weat_differential_association = weat_differential_association(A, B, X, Y, word)
+    weat_association_word = weat_association( word, A, B, word_to_embedding)
+    weat_differential_association = weat_differential_association(X, Y, A, B, word_to_embedding, weat_association)
 
     # === Section 3.1 ===
     debiased_word_to_embedding = debias_word_embedding(word, word_to_embedding,gender_subspace)
-    debiased_profession_to_embedding = hard_debias(profession_to_embedding, gender_attribute_words)
+    debiased_to_embedding = hard_debias(word_to_embedding, gender_attribute_words, n_components = 1)
+    debiased_profession_to_embedding = compute_profession_embeddings(debiased_to_embedding, professions)
     # === Section 3.2 ===
     direct_bias_professions_debiased = compute_direct_bias(professions, debiased_profession_to_embedding, gender_subspace)
 
@@ -866,6 +867,6 @@ if __name__ == "__main__":
         "drama",
         "sculpture",
     ]
-    p_value = p_value_permutation_test(A, B, X, Y, profession_to_embedding, n_iters=1000)
+    p_value = p_value_permutation_test(X, Y, A, B, profession_to_embedding)
 
     print(f"p-value: {p_value:.2f}")
