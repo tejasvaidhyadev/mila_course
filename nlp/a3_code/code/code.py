@@ -1,6 +1,8 @@
 from audioop import reverse
 from cProfile import label
+from cgi import test
 from doctest import Example
+from operator import index
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,6 +12,7 @@ import random
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 import pandas as pd
+import matplotlib.pyplot as plt
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -33,6 +36,19 @@ def build_index_map(
         sorted_counts = sorted_counts[:max_words-1]
     sorted_words = ["[PAD]"] + [item[0] for item in sorted_counts]
     return {word: ix for ix, word in enumerate(sorted_words)}
+
+def build_word_counts(dataloader) -> "dict[str, int]":
+    word_counts = {}
+    for batch in dataloader:
+        hypothesis = batch["hypothesis"]
+        premise = batch["premise"]
+        for words in tokenize(hypothesis):
+            for word in words:
+                word_counts[word] = word_counts.get(word, 0) + 1
+        for words in tokenize(premise):
+            for word in words:
+                word_counts[word] = word_counts.get(word, 0) + 1
+    return word_counts
 
 def build_word_counts(dataloader) -> "dict[str, int]":
     word_counts = {}
@@ -213,7 +229,8 @@ def train(model, dataset, lr, out_seq_len, num_epochs):
     optimizer = model.get_optimizer(lr)
     loss_fn = model.get_loss_function()
     # loop through epochs
-    
+    # graphing the loss
+    loss_list = []
     n = 0
     running_loss = 0
     for epoch in range(num_epochs):
@@ -226,25 +243,58 @@ def train(model, dataset, lr, out_seq_len, num_epochs):
             optimizer.step()
             running_loss += loss.item()
             n += 1
+        
+        loss_list.append(running_loss/n)
         # print info every X examples            
         print(f"Epoch {epoch}. Running loss so far: {(running_loss/n):.8f}")
-            
+        # plot the loss graph over the number of epochs
         print("\n-------------SAMPLE FROM MODEL-------------")
 
         # code to sample a sequence from your model randomly
         # randomly sample starting char index from vocab
         with torch.no_grad():
             for i in range(3):
-                # starting_char_index = np.random.randint(0, len(dataset.vocab))
-                starting_char = np.random.randint(0, len(dataset.vocab))
-                print("Sample: {}".format("".join(model.sample_sequence(starting_char, out_seq_len))))
+                # randomly sample single starting char from unique chars
+                starting_char = np.random.choice(dataset.unique_chars)
+                # get index of starting char using dataset.mapping
+                starting_char = dataset.mappings["char_to_idx"][starting_char]
+                # join list of chars to string
+                starting_char = ''.join(starting_char)
+                # sample sequence
+                seq = model.sample_sequence(starting_char, out_seq_len)
+                #list(tensor) to list of ints
+                seq = list(seq)
+                seq = [dataset.mappings["idx_to_char"][i] for i in seq]
+                # join list of chars to string
+                print("Sample: {}".format(''.join(seq)))
         
         n = 0
         running_loss = 0
-
+    # plot the loss graph over the number of epochs and save it
+    plot_loss(loss_list, "loss.png")
     return model # return model optionally
 
+def plot_loss(loss_list, filename):
+    # loss_List is list of list of loss values then flatten it to list 
+    # start new plot    
+    plt.figure()
+    if isinstance(loss_list[0], list):
+        loss_list = [item for sublist in loss_list for item in sublist]
+    plt.plot(loss_list)
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.savefig(filename)
 
+def plot_accuracies(train_acc, val_acc, test_acc, filename):
+    # plot the accuracies and save it
+    plt.plot(train_acc, label="train")
+    plt.plot(val_acc, label="val")
+    plt.plot(test_acc, label="test")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.savefig(filename)
+    
 def run_char_rnn():
     hidden_size = 512
     embedding_size = 300
@@ -256,8 +306,9 @@ def run_char_rnn():
     data_path = "./data/shakespeare.txt"
 
     # code to initialize dataloader, model
-    dataset = CharSeqDataloader(data_path, seq_len, 4)
-    model = CharRNN(dataset.n_chars, embedding_size, hidden_size)
+    dataset = CharSeqDataloader(data_path, seq_len, epoch_size)
+    n_chars = dataset.vocab_size
+    model = CharRNN(n_chars, embedding_size, hidden_size)
     model = model.to(device)
     # code to train model
     
@@ -276,8 +327,8 @@ def run_char_lstm():
     data_path = "./data/shakespeare.txt"
 
     # code to initialize dataloader, model
-    dataset = CharSeqDataloader(data_path, seq_len, 4)
-    model = CharLSTM(dataset.n_chars, embedding_size, hidden_size)
+    dataset = CharSeqDataloader(data_path, seq_len, epoch_size)
+    model = CharLSTM(dataset.vocab_size, embedding_size, hidden_size)
     model = model.to(device)
     # code to train model
 
@@ -294,10 +345,10 @@ def fix_padding(batch_premises, batch_hypotheses):
     reversed_batch_premises = [torch.flip(premise, [0]) for premise in batch_premises]
     reversed_batch_hypotheses = [torch.flip(hypothesis, [0]) for hypothesis in batch_hypotheses]
 
-    batch_premises = torch.nn.utils.rnn.pad_sequence(batch_premises, batch_first=True, padding_value=0)
-    batch_hypotheses = torch.nn.utils.rnn.pad_sequence(batch_hypotheses, batch_first=True, padding_value=0)
-    batch_premises_reverse = torch.nn.utils.rnn.pad_sequence(reversed_batch_premises, batch_first=True, padding_value=0)
-    batch_hypotheses_reverse = torch.nn.utils.rnn.pad_sequence(reversed_batch_hypotheses, batch_first=True, padding_value=0)
+    batch_premises = torch.nn.utils.rnn.pad_sequence(batch_premises, batch_first=True, padding_value=0).to(device)
+    batch_hypotheses = torch.nn.utils.rnn.pad_sequence(batch_hypotheses, batch_first=True, padding_value=0).to(device)
+    batch_premises_reverse = torch.nn.utils.rnn.pad_sequence(reversed_batch_premises, batch_first=True, padding_value=0).to(device)
+    batch_hypotheses_reverse = torch.nn.utils.rnn.pad_sequence(reversed_batch_hypotheses, batch_first=True, padding_value=0).to(device)
     
     return batch_premises, batch_hypotheses, batch_premises_reverse, batch_hypotheses_reverse
     
@@ -306,9 +357,13 @@ def create_embedding_matrix(word_index, emb_dict, emb_dim):
     # return Tensor[word_indices, emb_dim]
 
     embedding_matrix = np.zeros((len(word_index) , emb_dim))
+    
     for word, i in word_index.items():
         embedding_vector = emb_dict.get(word)
         if embedding_vector is not None:
+            # if dim of embedding vector is not same as emb_dim, then randomly initialize emb_dim-embedding_vector.shape[0] values
+            if embedding_vector.shape[0] != emb_dim:
+                embedding_vector = np.concatenate((embedding_vector, np.random.rand(emb_dim-embedding_vector.shape[0])))
             embedding_matrix[i] = embedding_vector
     return torch.from_numpy(embedding_matrix).float()
 
@@ -404,7 +459,8 @@ def run_snli(model):
     glove = pd.read_csv('./data/glove.6B.100d.txt', sep=" ", quoting=3, header=None, index_col=0)
 
     glove_embeddings = {key: val.values for key, val in glove.T.items()}
-
+    # filter out data with labels -1
+        
     train_filtered = dataset['train'].filter(lambda ex: ex['label'] != -1)
     valid_filtered = dataset['validation'].filter(lambda ex: ex['label'] != -1)
     test_filtered =  dataset['test'].filter(lambda ex: ex['label'] != -1)
@@ -418,20 +474,35 @@ def run_snli(model):
     index_map = build_index_map(word_counts)
 
     embedding_matrix = create_embedding_matrix(index_map, glove_embeddings, 100)
-    # training code
+
     model = model(len(index_map), 100, 1, 3)
-    model.embedding_layer.weight.data.copy_(embedding_matrix)
     
+    # update embedding layer with nn.embedding.from_pretrained method only tation if you need to). Pass freeze as False and padding_idx as 0.
+    model.embedding_layer = nn.Embedding.from_pretrained(torch.FloatTensor(embedding_matrix), freeze=False, padding_idx=0)
+
+    # model to GPU
+    model = model.to(device)
+
     # multilabel classification loss
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    num_epochs = 10
+    num_epochs = 32
+    train_loss = []
+    test_plot_accuracy = []
+    valid_plot_accuracy = []
+    train_plot_accuracy = []
     for epoch in range(num_epochs):
         model.train()
+
         for sample in dataloader_train:
             premises = sample['premise']
             hypotheses = sample['hypothesis']            
             labels = sample['label']
+            # to device
+            premises = premises
+            hypotheses = hypotheses
+            # label to tensor 
+            labels = torch.tensor(labels).to(device)
             tokenized_premises = tokens_to_ix(tokenize(premises), index_map)
             tokenized_hypotheses = tokens_to_ix(tokenize(hypotheses), index_map)
             # use tokens_to_ix
@@ -440,8 +511,23 @@ def run_snli(model):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-        print("Epoch: {}/{} Train Acc: {} Valid Acc: {}".format(epoch + 1, num_epochs, evaluate(model, dataloader_train, index_map), evaluate(model, dataloader_valid, index_map)))
-    print("Test Acc: {}".format(evaluate(model, dataloader_test, index_map)))
+            train_loss.append(loss.item())
+        Train_accuracy = evaluate(model, dataloader_train, index_map)
+        Test_accuracy = evaluate(model, dataloader_test, index_map)
+        Valid_accuracy = evaluate(model, dataloader_valid, index_map)
+        # plot accuracy of train, test and validation in same plot
+        test_plot_accuracy.append(Test_accuracy)
+        valid_plot_accuracy.append(Valid_accuracy)
+        train_plot_accuracy.append(Train_accuracy)
+
+        print("Epoch: {}/{} Train Acc: {} Valid Acc: {}".format(epoch + 1, num_epochs, Train_accuracy, Valid_accuracy))
+        print("Epoch: {}/{} Train Acc: {} Valid Acc: {}".format(epoch + 1, num_epochs, Train_accuracy, Test_accuracy))
+
+        # plot training loss
+    plot_accuracies(train_plot_accuracy, valid_plot_accuracy, test_plot_accuracy)
+    plt.plot(train_loss)
+    
+    print("Final Test Acc: {}".format(evaluate(model, dataloader_test, index_map)))
 
 def run_snli_lstm():
     model_class = UniLSTM
