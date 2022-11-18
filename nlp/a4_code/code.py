@@ -10,6 +10,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 import transformers
+import logging
+import util 
+import pandas as pd 
+import os
 
 # ######################## PART 1: PROVIDED CODE ########################
 
@@ -60,7 +64,7 @@ class NLIDataset(torch.utils.data.Dataset):
         return dd["premise"][idx], dd["hypothesis"][idx], dd["label"][idx]
 
 
-def train_distilbert(model, loader, device):
+def train_distilbert(model, loader, optimizer, device):
     model.train()
     criterion = model.get_criterion()
     total_loss = 0.0
@@ -281,16 +285,21 @@ def mean_reciprocal_rank(retrieved_indices: 'list[list[int]]', true_indices: 'li
 
 
 if __name__ == "__main__":
-    import pandas as pd
+    
+    import matplotlib.pyplot as plt
     from sklearn.metrics import f1_score  # Make sure sklearn is installed
-
+    from sklearn.metrics import accuracy_score
     random.seed(2022)
     torch.manual_seed(2022)
-
+    logging_dir = "logs/"
+    
+    util.set_logger(os.path.join(logging_dir, 'part_one.log'))
+    logging.info("Logging info below")
+    
     # Parameters (you can change them)
-    sample_size = 2500  # Change this if you want to take a subset of data for testing
+    sample_size = None  # Change this if you want to take a subset of data for testing
     batch_size = 64
-    n_epochs = 2
+    n_epochs = 10
     num_words = 50000
 
     # If you use GPUs, use the code below:
@@ -298,6 +307,8 @@ if __name__ == "__main__":
 
     # ###################### PART 1: TEST CODE ######################
     # Prefilled code showing you how to use the helper functions
+    
+    logging.info("Train dataset stats:")
     train_raw, valid_raw = load_datasets("data/nli")
     if sample_size is not None:
         for key in ["premise", "hypothesis", "label"]:
@@ -312,7 +323,7 @@ if __name__ == "__main__":
     )
     
     print("=" * 80)
-    print("Running test code for part 1")
+    logging.info("Running code for part-1")
     print("-" * 80)
 
     train_loader = torch.utils.data.DataLoader(
@@ -324,76 +335,69 @@ if __name__ == "__main__":
 
     model = CustomDistilBert().to(device)
     optimizer = model.assign_optimizer(lr=1e-4)
-
+    scores_trains = []
+    scores_valids = []
     for epoch in range(n_epochs):
-        loss = train_distilbert(model, train_loader, device=device)
+        loss = train_distilbert(model, train_loader, optimizer, device = device)
+        
+        logging.info(f"Epoch {epoch} loss: {loss}")
+        preds_train, targets_train = eval_distilbert(model, train_loader, device = device)
+        preds_train = preds_train.round()
+        scores_train = accuracy_score(targets_train.cpu(), preds_train.cpu())
+        scores_trains.append(scores_train)
+        f1_train = f1_score(targets_train.cpu(), preds_train.cpu())
+        logging.info(f"Epoch {epoch} f1 score: {f1_train}")
+        logging.info(f"Epoch {epoch} accuracy score on training set: {scores_train}")
+        
+        logging.info("\n")
+     
+        preds_valid, targets_valid = eval_distilbert(model, valid_loader, device = device)
+        preds_valid = preds_valid.round()
+        scores_valid = accuracy_score(targets_valid.cpu(), preds_valid.cpu())
+        scores_valids.append(scores_valid)
+        f1_valid = f1_score(targets_valid.cpu(), preds_valid.cpu())
+        logging.info(f"Epoch {epoch} f1 score: {f1_valid}")
+        logging.info(f"Epoch {epoch} accuracy score on validation set: {scores_valid}")
+        # model saved
+        
+        logging.info("\n")
+        logging.info("\n")
+        logging.info("=" * 80)
+    torch.save(model.state_dict(), 'part_one_model.pt')
+    logging.info("model is saved")
 
-        preds, targets = eval_distilbert(model, valid_loader, device=device)
-        preds = preds.round()
 
-        score = f1_score(targets.cpu(), preds.cpu())
-        print("Epoch:", epoch)
-        print("Training loss:", loss)
-        print("Validation F1 score:", score)
-        print()
+    # sample for final report. 
+    sample_raw = pd.DataFrame(valid_raw)
+    sample_raw = sample_raw.sample(100)
+    sample_raw = sample_raw.to_dict('list')
 
-    # ###################### PART 2: TEST CODE ######################
-    freeze_params(model.get_distilbert()) # Now, model should have no trainable parameters
-
-    sp = SoftPrompting(p=5, e=model.get_distilbert().embeddings.word_embeddings.embedding_dim)
-    batch = model.tokenize(
-        ["This is a premise.", "This is another premise."],
-        ["This is a hypothesis.", "This is another hypothesis."],
+    sample_loader = torch.utils.data.DataLoader(
+        NLIDataset(sample_raw), batch_size=1, shuffle=False
     )
-    batch.input_embedded = sp(model.get_distilbert().embeddings(batch.input_ids))
-    batch.attention_mask = pad_attention_mask(batch.attention_mask, 5)
 
-    # ###################### PART 3: TEST CODE ######################
-    # Preliminary
-    bsize = 8
-    qa_data = dict(
-        train = pd.read_csv('data/qa/train.csv'),
-        valid = pd.read_csv('data/qa/validation.csv'),
-        answers = pd.read_csv('data/qa/answers.csv'),
-    )
+    # print valid_raw
+    for premise, hypothesis, target in sample_loader:
+        logging.info(f"Premise: {premise}")
+        logging.info("\n")
+        logging.info(f"Hypothesis: {hypothesis}")
+        logging.info("\n")
+        
+        logging.info(f"True Label: {target}")
+        logging.info("\n")
 
-    q_titles = qa_data['train'].loc[:bsize-1, 'QuestionTitle'].tolist()
-    q_bodies = qa_data['train'].loc[:bsize-1, 'QuestionBody'].tolist()
-    answers = qa_data['train'].loc[:bsize-1, 'Answer'].tolist()
+        preds_sample = model(model.tokenize(premise, hypothesis).to(device))
+        preds_sample = preds_sample.round()
 
-    # Loading huggingface models and tokenizers    
-    name = 'google/electra-small-discriminator'
-    q_enc, a_enc, tokenizer = load_models_and_tokenizer(q_name=name, a_name=name, t_name=name)
-    
+        logging.info(f"Predicted Label: {preds_sample.cpu().detach().numpy()}")
+        logging.info("=" * 80)
 
-    # Tokenize batch and get class output
-    q_batch, a_batch = tokenize_qa_batch(tokenizer, q_titles, q_bodies, answers)
+    plt.plot(scores_trains, label = 'train')
+    plt.plot(scores_valids, label = 'valid')
+    plt.legend()
+    plt.xlabel('Number of epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy over time for both the training and validation sets')
+    plt.savefig('Accuracy over time for both the training and validation sets.png')
+    plt.show()
 
-    q_out = get_class_output(q_enc, q_batch)
-    a_out = get_class_output(a_enc, a_batch)
-
-    # Implement in-batch negative sampling
-    S = inbatch_negative_sampling(q_out, a_out)
-
-    # Implement contrastive loss
-    loss = contrastive_loss_criterion(S)
-    # or
-    # > loss = contrastive_loss_criterion(S, labels=...)
-
-    # Implement functions to run retrieval on list of passages
-    titles = q_titles
-    bodies = q_bodies
-    passages = answers + answers
-    Q = embed_questions(titles, bodies, model=q_enc, tokenizer=tokenizer, max_length=16)
-    P = embed_passages(passages, model=a_enc, tokenizer=tokenizer, max_length=16)
-
-    indices, scores = get_topk_indices(Q, P, k=5)
-    selected = select_by_indices(indices, passages)
-
-    # Implement evaluation metrics
-    retrieved_indices = [[1, 2, 12, 4], [30, 11, 14, 2], [16, 22, 3, 5]]
-    true_indices = [1, 2, 3]
-
-    print("Recall@k:", recall_at_k(retrieved_indices, true_indices, k=3))
-
-    print("MRR:", mean_reciprocal_rank(retrieved_indices, true_indices))
